@@ -34,10 +34,10 @@ exports.addBook = (req, res, next) => {
 };
 exports.addRating = (req, res, next) => {
     // delete req.body.ratings._id;
+    // .findOne({ id })
     // const rating = new bookModel({
-    // ratings: ...req.body, 
+    // ratings: ...req.body,
     // );
-
     // console.log(`rating : ${rating} - ratings.ratings : ${rating.ratings}`);
     // rating
     //     .save()
