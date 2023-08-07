@@ -32,33 +32,43 @@ exports.addBook = (req, res, next) => {
         .catch((error) => res.status(400).json({ error }));
 };
 exports.addRating = (req, res, next) => {
-    const bookRating = { ...req.body };
+    console.log(JSON.stringify(req.body));
     bookModel.findOne({ _id: req.params.id }).then((book) => {
-        // const bookRating = book.ratings;
-        // bookRating.pop(req.body);
-        // console.log(bookRating);
-        // .save()
-        // .then
+        if (!book) {
+            return res.status(404).json({ message: 'Livre non trouvé' });
+        } else {
+            delete req.body._id;
+            const newRating = {
+                userId: req.body.userId,
+                grade: req.body.rating
+            };
+            const newRatings = [...book.ratings, newRating];
+            const newAverageRating =
+                (book.averageRating + req.body.rating) / book.ratings.length;
+            bookModel
+                .updateOne(
+                    { _id: req.params.id },
+                    {
+                        $set: {
+                            ratings: newRatings,
+                            averageRating: newAverageRating
+                        }
+                    }
+                )
+                .then(() => res.status(200).json({ message: 'note ajoutée' }))
+                .catch((error) => console.log(error));
+        }
+        console.log('book :' + book);
     });
-    // delete req.body.ratings._id;
-    // .findOne({ id })
-    // const rating = new bookModel({
-    // ratings: ...req.body,
-    // );
-    // console.log(`rating : ${rating} - ratings.ratings : ${rating.ratings}`);
-    // rating
-    //     .save()
-    //     .then(() => {
-    //         console.log('note ajoutée');
-    //         res.status(200).json({ message: 'Note ajoutée ' });
-    //     })
-    //     .catch((error) => res.status(400).json({ error }));
 };
 
 exports.seeBook = (req, res, next) => {
     bookModel
         .findOne({ _id: req.params.id })
-        .then((book) => res.status(200).json(book))
+        .then((book) => {
+            console.log(book);
+            res.status(200).json(book);
+        })
         .catch((error) => res.status(404).json({ error }));
 };
 
