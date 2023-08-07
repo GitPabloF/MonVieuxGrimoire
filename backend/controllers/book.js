@@ -2,7 +2,6 @@ const bookModel = require('../models/book');
 const fs = require('fs');
 
 exports.seeBestBooks = (req, res, next) => {
-    console.log('best book route ok');
     bookModel
         .find()
         .then((books) => {
@@ -33,6 +32,14 @@ exports.addBook = (req, res, next) => {
         .catch((error) => res.status(400).json({ error }));
 };
 exports.addRating = (req, res, next) => {
+    const bookRating = { ...req.body };
+    bookModel.findOne({ _id: req.params.id }).then((book) => {
+        // const bookRating = book.ratings;
+        // bookRating.pop(req.body);
+        // console.log(bookRating);
+        // .save()
+        // .then
+    });
     // delete req.body.ratings._id;
     // .findOne({ id })
     // const rating = new bookModel({
