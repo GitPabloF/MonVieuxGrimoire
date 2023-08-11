@@ -31,20 +31,28 @@ exports.addBook = (req, res, next) => {
         )
         .catch((error) => res.status(400).json({ error }));
 };
+
 exports.addRating = (req, res, next) => {
-    console.log(JSON.stringify(req.body));
     bookModel.findOne({ _id: req.params.id }).then((book) => {
         if (!book) {
             return res.status(404).json({ message: 'Livre non trouvé' });
+        } else if (
+            book.ratings.some((rating) => rating.userId === req.body.userId)
+        ) {
+            return res.status(401).json({ message: 'Livre déjà noté' });
         } else {
             delete req.body._id;
             const newRating = {
                 userId: req.body.userId,
                 grade: req.body.rating
             };
+            const ratingsSum = book.ratings
+                .map((ratings) => ratings.grade)
+                .reduce((prev, curr) => prev + curr); 
+
             const newRatings = [...book.ratings, newRating];
             const newAverageRating =
-                (book.averageRating + req.body.rating) / book.ratings.length;
+                ((ratingsSum + req.body.rating) / (book.ratings.length +1)).toFixed(2); 
             bookModel
                 .updateOne(
                     { _id: req.params.id },
@@ -55,10 +63,11 @@ exports.addRating = (req, res, next) => {
                         }
                     }
                 )
-                .then(() => res.status(200).json({ message: 'note ajoutée' }))
-                .catch((error) => console.log(error));
+                .then(() =>
+                    res.status(201).json({ message: 'note ajoutée' })
+                )
+                .catch((error) => res.status(400).json({error}));
         }
-        console.log('book :' + book);
     });
 };
 
@@ -66,7 +75,6 @@ exports.seeBook = (req, res, next) => {
     bookModel
         .findOne({ _id: req.params.id })
         .then((book) => {
-            console.log(book);
             res.status(200).json(book);
         })
         .catch((error) => res.status(404).json({ error }));
