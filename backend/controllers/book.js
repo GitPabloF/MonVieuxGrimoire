@@ -1,5 +1,7 @@
 const bookModel = require('../models/book');
 const fs = require('fs');
+const sharp = require('sharp');
+const path = require('path');
 
 exports.seeBestBooks = (req, res, next) => {
     bookModel
@@ -10,25 +12,31 @@ exports.seeBestBooks = (req, res, next) => {
                 .slice(0, 3);
             res.status(200).json(bestBooks);
         })
-        .catch((error) => res.status(400).json({ error }));
+        .catch((error) => res.status(500).json({ error }));
 };
 
 exports.addBook = (req, res, next) => {
     const bookObject = JSON.parse(req.body.book);
     delete bookObject._id;
     delete bookObject._userId;
+    const nameWithoutExtension = path.parse(req.file.originalname).name;
+    const name = `${nameWithoutExtension
+        .split(' ')
+        .join('_')}-${Date.now()}.webp`;
     const book = new bookModel({
         ...bookObject,
         _userId: req.auth.userId,
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${
-            req.file.filename
-        }`,
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${name}`,
         averageRating: 0
     });
     book.save()
-        .then(() =>
-            res.status(201).json({ message: 'Livre ajouté avec succès !' })
-        )
+        .then(async () => {
+            const path = `images/${name}`;
+            await sharp(req.file.buffer).webp({ quality: 20 }).toFile(path);
+            return res
+                .status(201)
+                .json({ message: 'Livre ajouté avec succès !' });
+        })
         .catch((error) => res.status(400).json({ error }));
 };
 
@@ -48,25 +56,27 @@ exports.addRating = (req, res, next) => {
             };
             const ratingsSum = book.ratings
                 .map((ratings) => ratings.grade)
-                .reduce((prev, curr) => prev + curr); 
-
+                .reduce((prev, curr) => prev + curr);
             const newRatings = [...book.ratings, newRating];
-            const newAverageRating =
-                ((ratingsSum + req.body.rating) / (book.ratings.length +1)).toFixed(2); 
+            const newAverageRating = (
+                (ratingsSum + req.body.rating) /
+                (book.ratings.length + 1)
+            ).toFixed(2);
             bookModel
-                .updateOne(
+                .findOneAndUpdate(
                     { _id: req.params.id },
                     {
                         $set: {
                             ratings: newRatings,
                             averageRating: newAverageRating
                         }
-                    }
+                    },
+                    { new: true }
                 )
-                .then(() =>
-                    res.status(201).json({ message: 'note ajoutée' })
-                )
-                .catch((error) => res.status(400).json({error}));
+                .then((book) => {
+                    res.status(200).json(book);
+                })
+                .catch((error) => res.status(400).json({ error }));
         }
     });
 };

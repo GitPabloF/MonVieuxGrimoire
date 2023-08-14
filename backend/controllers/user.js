@@ -18,7 +18,7 @@ exports.signup = (req, res, next) => {
         })
         .catch((error) => {
             console.log('erreur 2');
-            res.status(500).json({ message: 'erreur 1' });
+            res.status(500).json({ error });
         });
 };
 
