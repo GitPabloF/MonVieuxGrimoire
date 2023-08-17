@@ -1,13 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
+require('dotenv').config();
 
 const userRoutes = require('./routes/user');
 const bookRoutes = require('./routes/book');
 
 mongoose
     .connect(
-        'mongodb+srv://User1:Malaisie2022@cluster0.btkggwd.mongodb.net/?retryWrites=true&w=majority',
+        `mongodb+srv://${process.env.DB_USERID}:${process.env.DB_USERID}@cluster0.btkggwd.mongodb.net/?retryWrites=true&w=majority`,
         { useNewUrlParser: true, useUnifiedTopology: true }
     )
     .then(() => console.log('Connexion à MongoDB réussie !'))

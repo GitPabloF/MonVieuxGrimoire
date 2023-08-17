@@ -7,6 +7,7 @@ exports.seeBestBooks = (req, res, next) => {
     bookModel
         .find()
         .then((books) => {
+            // to sort the books by the best averageRating and get the top 3
             const bestBooks = books
                 .sort((a, b) => b.averageRating - a.averageRating)
                 .slice(0, 3);
@@ -19,6 +20,7 @@ exports.addBook = (req, res, next) => {
     const bookObject = JSON.parse(req.body.book);
     delete bookObject._id;
     delete bookObject._userId;
+    // to rename the image with the original name without the space + the date
     const nameWithoutExtension = path.parse(req.file.originalname).name;
     const name = `${nameWithoutExtension
         .split(' ')
@@ -32,6 +34,7 @@ exports.addBook = (req, res, next) => {
     book.save()
         .then(async () => {
             const path = `images/${name}`;
+            //  converts the file to webp and compress it to 80%.
             await sharp(req.file.buffer).webp({ quality: 20 }).toFile(path);
             return res
                 .status(201)
@@ -54,14 +57,17 @@ exports.addRating = (req, res, next) => {
                 userId: req.body.userId,
                 grade: req.body.rating
             };
+            // map rating array with all the grades and get the sum
             const ratingsSum = book.ratings
                 .map((ratings) => ratings.grade)
                 .reduce((prev, curr) => prev + curr);
             const newRatings = [...book.ratings, newRating];
+            //  calculates the average score rounded to two decimal places
             const newAverageRating = (
                 (ratingsSum + req.body.rating) /
                 (book.ratings.length + 1)
             ).toFixed(2);
+            // find the book and update with new datas
             bookModel
                 .findOneAndUpdate(
                     { _id: req.params.id },
@@ -97,6 +103,7 @@ exports.deleteBook = (req, res, next) => {
             if (book.userId != req.auth.userId) {
                 res.status(401).json({ message: 'Not authorized' });
             } else {
+                // get the file name and remove of the file system and of the DB
                 const filename = book.imageUrl.split('/images/')[1];
                 fs.unlink(`images/${filename}`, () => {
                     bookModel
