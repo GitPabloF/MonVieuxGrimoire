@@ -3,6 +3,7 @@ const fs = require('fs');
 const sharp = require('sharp');
 const path = require('path');
 
+// to see the three top-rated books  
 exports.seeBestBooks = (req, res, next) => {
     bookModel
         .find()
@@ -16,6 +17,7 @@ exports.seeBestBooks = (req, res, next) => {
         .catch((error) => res.status(500).json({ error }));
 };
 
+// add a book
 exports.addBook = (req, res, next) => {
     const bookObject = JSON.parse(req.body.book);
     delete bookObject._id;
@@ -43,6 +45,7 @@ exports.addBook = (req, res, next) => {
         .catch((error) => res.status(400).json({ error }));
 };
 
+// add a rating to a book added by another user
 exports.addRating = (req, res, next) => {
     bookModel.findOne({ _id: req.params.id }).then((book) => {
         if (!book) {
@@ -87,6 +90,7 @@ exports.addRating = (req, res, next) => {
     });
 };
 
+// display book information 
 exports.seeBook = (req, res, next) => {
     bookModel
         .findOne({ _id: req.params.id })
@@ -96,6 +100,7 @@ exports.seeBook = (req, res, next) => {
         .catch((error) => res.status(404).json({ error }));
 };
 
+// delete book 
 exports.deleteBook = (req, res, next) => {
     bookModel
         .findOne({ _id: req.params.id })
@@ -122,6 +127,7 @@ exports.deleteBook = (req, res, next) => {
         });
 };
 
+// modify a book 
 exports.modifyBook = (req, res, next) => {
     const bookObject = req.file
         ? {
@@ -154,6 +160,7 @@ exports.modifyBook = (req, res, next) => {
         });
 };
 
+// display all books 
 exports.seeBooks = (req, res, next) => {
     bookModel
         .find()

@@ -6,6 +6,7 @@ require('dotenv').config();
 const userRoutes = require('./routes/user');
 const bookRoutes = require('./routes/book');
 
+// connect to the mongoose database
 mongoose
     .connect(
         `mongodb+srv://${process.env.DB_USERID}:${process.env.DB_USERID}@cluster0.btkggwd.mongodb.net/?retryWrites=true&w=majority`,
@@ -15,9 +16,9 @@ mongoose
     .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 const app = express();
-
 app.use(express.json());
 
+// configure all the Headers
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader(
